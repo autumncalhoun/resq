@@ -1,31 +1,55 @@
-"use client"
+'use client'
 
-import type React from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { useRouter } from "next/navigation"
-import { useState } from "react"
-import { useMockAuth } from "@/lib/mock-auth"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import { useEffect, useState } from 'react'
+
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import type React from 'react'
+import { Textarea } from '@/components/ui/textarea'
+import type { User } from '@/lib/types'
+import { createClient } from '@/lib/supabase/client'
+import { useRouter } from 'next/navigation'
 
 export default function CreateOrganizationPage() {
-  const { user } = useMockAuth()
+  const [user, setUser] = useState<User | null>(null)
   const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    address: "",
-    city: "",
-    state: "",
-    zip_code: "",
-    phone: "",
-    email: "",
-    website: "",
+    name: '',
+    description: '',
+    address: '',
+    city: '',
+    state: '',
+    zip_code: '',
+    phone: '',
+    email: '',
+    website: '',
   })
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
+
+  useEffect(() => {
+    loadUser()
+  })
+
+  const loadUser = async () => {
+    const supabase = createClient()
+    const {
+      data: { user: currentUser },
+    } = await supabase.auth.getUser()
+    if (!currentUser) {
+      router.push('/auth/login')
+      return
+    }
+    setUser(currentUser)
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -33,7 +57,7 @@ export default function CreateOrganizationPage() {
     setError(null)
 
     try {
-      console.log("[v0] Mock organization creation:", {
+      console.log('[v0] Mock organization creation:', {
         ...formData,
         created_by: user?.id,
       })
@@ -41,15 +65,17 @@ export default function CreateOrganizationPage() {
       // Simulate API delay
       await new Promise((resolve) => setTimeout(resolve, 1000))
 
-      router.push("/dashboard")
+      router.push('/dashboard')
     } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : "An error occurred")
+      setError(error instanceof Error ? error.message : 'An error occurred')
     } finally {
       setIsLoading(false)
     }
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     setFormData((prev) => ({
       ...prev,
       [e.target.name]: e.target.value,
@@ -62,7 +88,9 @@ export default function CreateOrganizationPage() {
         <Card className="shadow-lg border-0">
           <CardHeader>
             <CardTitle className="text-2xl">Create Your Organization</CardTitle>
-            <CardDescription>Set up your rescue organization to start managing dog profiles</CardDescription>
+            <CardDescription>
+              Set up your rescue organization to start managing dog profiles
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -128,7 +156,13 @@ export default function CreateOrganizationPage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="state">State</Label>
-                  <Input id="state" name="state" value={formData.state} onChange={handleChange} placeholder="CA" />
+                  <Input
+                    id="state"
+                    name="state"
+                    value={formData.state}
+                    onChange={handleChange}
+                    placeholder="CA"
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="zip_code">ZIP Code</Label>
@@ -168,15 +202,24 @@ export default function CreateOrganizationPage() {
               </div>
 
               {error && (
-                <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">{error}</div>
+                <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
+                  {error}
+                </div>
               )}
 
               <div className="flex gap-4">
-                <Button type="button" variant="outline" onClick={() => router.back()} className="flex-1">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => router.back()}
+                  className="flex-1">
                   Cancel
                 </Button>
-                <Button type="submit" disabled={isLoading} className="flex-1 bg-blue-600 hover:bg-blue-700">
-                  {isLoading ? "Creating..." : "Create Organization"}
+                <Button
+                  type="submit"
+                  disabled={isLoading}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700">
+                  {isLoading ? 'Creating...' : 'Create Organization'}
                 </Button>
               </div>
             </form>

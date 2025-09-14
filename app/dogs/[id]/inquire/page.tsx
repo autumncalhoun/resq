@@ -1,14 +1,20 @@
-"use client"
+'use client'
 
-import type React from "react"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import { useEffect, useState } from 'react'
+import { useParams, useRouter } from 'next/navigation'
 
-import { createClient } from "@/lib/supabase/client"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
-import { useParams, useRouter } from "next/navigation"
-import { useState, useEffect } from "react"
+import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
+import type React from 'react'
+import { Textarea } from '@/components/ui/textarea'
+import { createClient } from '@/lib/supabase/client'
 
 interface Dog {
   id: string
@@ -17,7 +23,7 @@ interface Dog {
   photos: string
   organizations: {
     name: string
-  }
+  }[]
 }
 
 export default function InquirePage() {
@@ -25,7 +31,7 @@ export default function InquirePage() {
   const router = useRouter()
   const dogId = params.id as string
   const [dog, setDog] = useState<Dog | null>(null)
-  const [message, setMessage] = useState("")
+  const [message, setMessage] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
@@ -37,15 +43,17 @@ export default function InquirePage() {
     const supabase = createClient()
 
     const { data } = await supabase
-      .from("dogs")
-      .select(`
+      .from('dogs')
+      .select(
+        `
         id,
         name,
         breed,
         photos,
         organizations (name)
-      `)
-      .eq("id", dogId)
+      `
+      )
+      .eq('id', dogId)
       .single()
 
     if (data) {
@@ -62,11 +70,11 @@ export default function InquirePage() {
     try {
       const { data: user } = await supabase.auth.getUser()
       if (!user.user) {
-        router.push("/auth/login")
+        router.push('/auth/login')
         return
       }
 
-      const { error } = await supabase.from("inquiries").insert({
+      const { error } = await supabase.from('inquiries').insert({
         dog_id: dogId,
         inquirer_id: user.user.id,
         message: message.trim(),
@@ -74,9 +82,9 @@ export default function InquirePage() {
 
       if (error) throw error
 
-      router.push("/inquiries?success=true")
+      router.push('/inquiries?success=true')
     } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : "An error occurred")
+      setError(error instanceof Error ? error.message : 'An error occurred')
     } finally {
       setIsLoading(false)
     }
@@ -91,7 +99,7 @@ export default function InquirePage() {
   }
 
   const photos = dog.photos ? JSON.parse(dog.photos) : []
-  const mainPhoto = photos[0] || "/cute-dog.png"
+  const mainPhoto = photos[0] || '/cute-dog.png'
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -101,7 +109,7 @@ export default function InquirePage() {
             <div className="flex gap-4 items-center">
               <div className="w-16 h-16 flex-shrink-0">
                 <img
-                  src={mainPhoto || "/placeholder.svg"}
+                  src={mainPhoto || '/placeholder.svg'}
                   alt={dog.name}
                   className="w-full h-full object-cover rounded-lg"
                 />
@@ -109,7 +117,7 @@ export default function InquirePage() {
               <div>
                 <h1 className="text-xl font-semibold">{dog.name}</h1>
                 <p className="text-gray-600">
-                  {dog.breed} • {dog.organizations.name}
+                  {dog.breed} • {dog.organizations[0]?.name}
                 </p>
               </div>
             </div>
@@ -119,7 +127,10 @@ export default function InquirePage() {
         <Card className="shadow-lg border-0">
           <CardHeader>
             <CardTitle>Send an Inquiry</CardTitle>
-            <CardDescription>Ask questions about {dog.name} or express your interest in adoption</CardDescription>
+            <CardDescription>
+              Ask questions about {dog.name} or express your interest in
+              adoption
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -135,24 +146,30 @@ export default function InquirePage() {
                   className="resize-none"
                 />
                 <p className="text-xs text-gray-500">
-                  Be specific about your questions or interest. The rescue will respond to your inquiry.
+                  Be specific about your questions or interest. The rescue will
+                  respond to your inquiry.
                 </p>
               </div>
 
               {error && (
-                <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">{error}</div>
+                <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
+                  {error}
+                </div>
               )}
 
               <div className="flex gap-4">
-                <Button type="button" variant="outline" onClick={() => router.back()} className="flex-1">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => router.back()}
+                  className="flex-1">
                   Cancel
                 </Button>
                 <Button
                   type="submit"
                   disabled={isLoading || !message.trim()}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700"
-                >
-                  {isLoading ? "Sending..." : "Send Inquiry"}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700">
+                  {isLoading ? 'Sending...' : 'Send Inquiry'}
                 </Button>
               </div>
             </form>

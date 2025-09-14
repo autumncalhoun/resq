@@ -1,16 +1,29 @@
-"use client"
+'use client'
 
-import type React from "react"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { useEffect, useState } from 'react'
 
-import { useMockAuth } from "@/lib/mock-auth"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useRouter } from "next/navigation"
-import { useState, useEffect } from "react"
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import type React from 'react'
+import { Textarea } from '@/components/ui/textarea'
+import type { User } from '@/lib/types'
+import { createClient } from '@/lib/supabase/client'
+import { useRouter } from 'next/navigation'
 
 interface Organization {
   id: string
@@ -18,40 +31,75 @@ interface Organization {
 }
 
 export default function AddDogPage() {
-  const { user, profile } = useMockAuth()
+  const [user, setUser] = useState<User | null>(null)
   const [organizations, setOrganizations] = useState<Organization[]>([])
   const [formData, setFormData] = useState({
-    organization_id: "",
-    name: "",
-    breed: "",
-    age_years: "",
-    age_months: "",
-    size: "",
-    gender: "",
-    description: "",
-    medical_notes: "",
-    behavioral_notes: "",
-    adoption_fee: "",
-    location_city: "",
-    location_state: "",
+    organization_id: '',
+    name: '',
+    breed: '',
+    age_years: '',
+    age_months: '',
+    size: '',
+    gender: '',
+    description: '',
+    medical_notes: '',
+    behavioral_notes: '',
+    adoption_fee: '',
+    location_city: '',
+    location_state: '',
   })
   const [photos, setPhotos] = useState<string[]>([])
-  const [newPhotoUrl, setNewPhotoUrl] = useState("")
+  const [newPhotoUrl, setNewPhotoUrl] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
-    loadUserOrganizations()
+    loadUserData()
   }, [])
 
-  const loadUserOrganizations = async () => {
-    const mockOrgs = [
-      { id: "1", name: "Demo Rescue Organization" },
-      { id: "2", name: "Happy Tails Rescue" },
-    ]
-    setOrganizations(mockOrgs)
-    setFormData((prev) => ({ ...prev, organization_id: mockOrgs[0].id }))
+  const loadUserData = async () => {
+    const supabase = createClient()
+
+    // Get current user
+    const {
+      data: { user: currentUser },
+    } = await supabase.auth.getUser()
+    if (!currentUser) {
+      router.push('/auth/login')
+      return
+    }
+    setUser(currentUser)
+
+    // Get user profile (not used in this component)
+    // const { data: userProfile } = await supabase
+    //   .from('profiles')
+    //   .select('*')
+    //   .eq('id', currentUser.id)
+    //   .single()
+
+    // Get user's organizations
+    const { data: orgMemberships } = await supabase
+      .from('organization_members')
+      .select(
+        `
+        organizations (
+          id,
+          name
+        )
+      `
+      )
+      .eq('user_id', currentUser.id)
+
+    const userOrgs =
+      orgMemberships
+        ?.map((member: any) => member.organizations)
+        .filter(Boolean) || []
+    setOrganizations(userOrgs)
+
+    if (userOrgs.length > 0) {
+      setFormData((prev) => ({ ...prev, organization_id: userOrgs[0].id }))
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -60,11 +108,17 @@ export default function AddDogPage() {
     setError(null)
 
     try {
-      console.log("[v0] Mock dog submission:", {
+      console.log('[v0] Mock dog submission:', {
         ...formData,
-        age_years: formData.age_years ? Number.parseInt(formData.age_years) : null,
-        age_months: formData.age_months ? Number.parseInt(formData.age_months) : null,
-        adoption_fee: formData.adoption_fee ? Number.parseFloat(formData.adoption_fee) : null,
+        age_years: formData.age_years
+          ? Number.parseInt(formData.age_years)
+          : null,
+        age_months: formData.age_months
+          ? Number.parseInt(formData.age_months)
+          : null,
+        adoption_fee: formData.adoption_fee
+          ? Number.parseFloat(formData.adoption_fee)
+          : null,
         photos: JSON.stringify(photos),
         created_by: user?.id,
       })
@@ -72,15 +126,17 @@ export default function AddDogPage() {
       // Simulate API delay
       await new Promise((resolve) => setTimeout(resolve, 1000))
 
-      router.push("/dashboard")
+      router.push('/dashboard')
     } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : "An error occurred")
+      setError(error instanceof Error ? error.message : 'An error occurred')
     } finally {
       setIsLoading(false)
     }
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     setFormData((prev) => ({
       ...prev,
       [e.target.name]: e.target.value,
@@ -90,7 +146,7 @@ export default function AddDogPage() {
   const addPhoto = () => {
     if (newPhotoUrl.trim()) {
       setPhotos((prev) => [...prev, newPhotoUrl.trim()])
-      setNewPhotoUrl("")
+      setNewPhotoUrl('')
     }
   }
 
@@ -104,7 +160,9 @@ export default function AddDogPage() {
         <Card className="max-w-md">
           <CardHeader>
             <CardTitle>Loading Organizations...</CardTitle>
-            <CardDescription>Please wait while we load your organizations.</CardDescription>
+            <CardDescription>
+              Please wait while we load your organizations.
+            </CardDescription>
           </CardHeader>
         </Card>
       </div>
@@ -117,7 +175,9 @@ export default function AddDogPage() {
         <Card className="shadow-lg border-0">
           <CardHeader>
             <CardTitle className="text-2xl">Add New Dog</CardTitle>
-            <CardDescription>Create a profile for a dog available for adoption</CardDescription>
+            <CardDescription>
+              Create a profile for a dog available for adoption
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -125,8 +185,9 @@ export default function AddDogPage() {
                 <Label htmlFor="organization_id">Organization *</Label>
                 <Select
                   value={formData.organization_id}
-                  onValueChange={(value) => setFormData((prev) => ({ ...prev, organization_id: value }))}
-                >
+                  onValueChange={(value) =>
+                    setFormData((prev) => ({ ...prev, organization_id: value }))
+                  }>
                   <SelectTrigger>
                     <SelectValue placeholder="Select organization" />
                   </SelectTrigger>
@@ -195,8 +256,9 @@ export default function AddDogPage() {
                   <Label htmlFor="size">Size</Label>
                   <Select
                     value={formData.size}
-                    onValueChange={(value) => setFormData((prev) => ({ ...prev, size: value }))}
-                  >
+                    onValueChange={(value) =>
+                      setFormData((prev) => ({ ...prev, size: value }))
+                    }>
                     <SelectTrigger>
                       <SelectValue placeholder="Select size" />
                     </SelectTrigger>
@@ -212,8 +274,9 @@ export default function AddDogPage() {
                   <Label htmlFor="gender">Gender</Label>
                   <Select
                     value={formData.gender}
-                    onValueChange={(value) => setFormData((prev) => ({ ...prev, gender: value }))}
-                  >
+                    onValueChange={(value) =>
+                      setFormData((prev) => ({ ...prev, gender: value }))
+                    }>
                     <SelectTrigger>
                       <SelectValue placeholder="Select gender" />
                     </SelectTrigger>
@@ -314,14 +377,20 @@ export default function AddDogPage() {
                 {photos.length > 0 && (
                   <div className="space-y-2">
                     {photos.map((photo, index) => (
-                      <div key={index} className="flex items-center gap-2 p-2 bg-gray-50 rounded">
+                      <div
+                        key={index}
+                        className="flex items-center gap-2 p-2 bg-gray-50 rounded">
                         <img
-                          src={photo || "/placeholder.svg"}
+                          src={photo || '/placeholder.svg'}
                           alt={`Photo ${index + 1}`}
                           className="w-12 h-12 object-cover rounded"
                         />
                         <span className="flex-1 text-sm truncate">{photo}</span>
-                        <Button type="button" onClick={() => removePhoto(index)} variant="outline" size="sm">
+                        <Button
+                          type="button"
+                          onClick={() => removePhoto(index)}
+                          variant="outline"
+                          size="sm">
                           Remove
                         </Button>
                       </div>
@@ -331,19 +400,24 @@ export default function AddDogPage() {
               </div>
 
               {error && (
-                <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">{error}</div>
+                <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
+                  {error}
+                </div>
               )}
 
               <div className="flex gap-4">
-                <Button type="button" variant="outline" onClick={() => router.back()} className="flex-1">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => router.back()}
+                  className="flex-1">
                   Cancel
                 </Button>
                 <Button
                   type="submit"
                   disabled={isLoading || !formData.organization_id}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700"
-                >
-                  {isLoading ? "Adding..." : "Add Dog"}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700">
+                  {isLoading ? 'Adding...' : 'Add Dog'}
                 </Button>
               </div>
             </form>

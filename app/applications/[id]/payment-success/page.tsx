@@ -1,10 +1,17 @@
-"use client"
+'use client'
 
-import { createClient } from "@/lib/supabase/client"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { useParams, useRouter } from "next/navigation"
-import { useState, useEffect } from "react"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import { useEffect, useState } from 'react'
+import { useParams, useRouter } from 'next/navigation'
+
+import { Button } from '@/components/ui/button'
+import { createClient } from '@/lib/supabase/client'
 
 interface Payment {
   id: string
@@ -39,8 +46,9 @@ export default function PaymentSuccessPage() {
     const supabase = createClient()
 
     const { data: paymentData } = await supabase
-      .from("payments")
-      .select(`
+      .from('payments')
+      .select(
+        `
         *,
         adoption_applications (
           dogs (
@@ -50,8 +58,9 @@ export default function PaymentSuccessPage() {
             organizations (name)
           )
         )
-      `)
-      .eq("application_id", applicationId)
+      `
+      )
+      .eq('application_id', applicationId)
       .single()
 
     if (paymentData) {
@@ -67,8 +76,10 @@ export default function PaymentSuccessPage() {
     )
   }
 
-  const photos = payment.adoption_applications.dogs.photos ? JSON.parse(payment.adoption_applications.dogs.photos) : []
-  const mainPhoto = photos[0] || "/placeholder.svg"
+  const photos = payment.adoption_applications.dogs.photos
+    ? JSON.parse(payment.adoption_applications.dogs.photos)
+    : []
+  const mainPhoto = photos[0] || '/placeholder.svg'
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -76,26 +87,44 @@ export default function PaymentSuccessPage() {
         <Card className="text-center">
           <CardHeader className="pb-6">
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              <svg
+                className="w-8 h-8 text-green-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 13l4 4L19 7"
+                />
               </svg>
             </div>
-            <CardTitle className="text-2xl text-green-600">Payment Successful!</CardTitle>
+            <CardTitle className="text-2xl text-green-600">
+              Payment Successful!
+            </CardTitle>
             <CardDescription className="text-lg">
-              Congratulations! You've successfully adopted {payment.adoption_applications.dogs.name}
+              Congratulations! You&apos;ve successfully adopted{' '}
+              {payment.adoption_applications.dogs.name}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="flex items-center justify-center gap-4">
               <img
-                src={mainPhoto || "/placeholder.svg"}
+                src={mainPhoto || '/placeholder.svg'}
                 alt={payment.adoption_applications.dogs.name}
                 className="w-20 h-20 object-cover rounded-full"
               />
               <div className="text-left">
-                <h3 className="font-semibold text-xl">{payment.adoption_applications.dogs.name}</h3>
-                <p className="text-gray-600">{payment.adoption_applications.dogs.breed}</p>
-                <p className="text-sm text-gray-500">{payment.adoption_applications.dogs.organizations.name}</p>
+                <h3 className="font-semibold text-xl">
+                  {payment.adoption_applications.dogs.name}
+                </h3>
+                <p className="text-gray-600">
+                  {payment.adoption_applications.dogs.breed}
+                </p>
+                <p className="text-sm text-gray-500">
+                  {payment.adoption_applications.dogs.organizations.name}
+                </p>
               </div>
             </div>
 
@@ -120,7 +149,9 @@ export default function PaymentSuccessPage() {
                 </div>
                 <div className="flex justify-between text-gray-500">
                   <span>Date:</span>
-                  <span>{new Date(payment.created_at).toLocaleDateString()}</span>
+                  <span>
+                    {new Date(payment.created_at).toLocaleDateString()}
+                  </span>
                 </div>
               </div>
             </div>
@@ -128,18 +159,26 @@ export default function PaymentSuccessPage() {
             <div className="bg-blue-50 rounded-lg p-4 text-left">
               <h4 className="font-semibold text-blue-900 mb-2">What's Next?</h4>
               <ul className="text-sm text-blue-800 space-y-1">
-                <li>• The rescue organization will contact you within 24-48 hours</li>
-                <li>• They'll coordinate pickup/delivery arrangements</li>
-                <li>• You'll receive adoption paperwork and medical records</li>
+                <li>
+                  • The rescue organization will contact you within 24-48 hours
+                </li>
+                <li>• They&apos;ll coordinate pickup/delivery arrangements</li>
+                <li>
+                  • You&apos;ll receive adoption paperwork and medical records
+                </li>
                 <li>• Welcome to the wonderful world of dog parenthood! 🐕</li>
               </ul>
             </div>
 
             <div className="flex gap-3 justify-center">
-              <Button onClick={() => router.push("/dashboard")} variant="outline">
+              <Button
+                onClick={() => router.push('/dashboard')}
+                variant="outline">
                 Back to Dashboard
               </Button>
-              <Button onClick={() => router.push("/browse")} className="bg-blue-600 hover:bg-blue-700">
+              <Button
+                onClick={() => router.push('/browse')}
+                className="bg-blue-600 hover:bg-blue-700">
                 Browse More Dogs
               </Button>
             </div>

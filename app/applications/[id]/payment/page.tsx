@@ -1,15 +1,21 @@
-"use client"
+'use client'
 
-import type React from "react"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import { useEffect, useState } from 'react'
+import { useParams, useRouter } from 'next/navigation'
 
-import { createClient } from "@/lib/supabase/client"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
-import { useParams, useRouter } from "next/navigation"
-import { useState, useEffect } from "react"
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import type React from 'react'
+import { createClient } from '@/lib/supabase/client'
 
 interface Application {
   id: string
@@ -35,10 +41,10 @@ export default function PaymentPage() {
   const [currentUser, setCurrentUser] = useState<any>(null)
   const [isProcessing, setIsProcessing] = useState(false)
   const [paymentData, setPaymentData] = useState({
-    cardNumber: "",
-    expiryDate: "",
-    cvv: "",
-    cardholderName: "",
+    cardNumber: '',
+    expiryDate: '',
+    cvv: '',
+    cardholderName: '',
   })
 
   useEffect(() => {
@@ -50,7 +56,11 @@ export default function PaymentPage() {
     const supabase = createClient()
     const { data: user } = await supabase.auth.getUser()
     if (user.user) {
-      const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.user.id).single()
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.user.id)
+        .single()
       setCurrentUser({ ...user.user, profile })
     }
   }
@@ -59,8 +69,9 @@ export default function PaymentPage() {
     const supabase = createClient()
 
     const { data: applicationData } = await supabase
-      .from("adoption_applications")
-      .select(`
+      .from('adoption_applications')
+      .select(
+        `
         *,
         dogs (
           id,
@@ -70,8 +81,9 @@ export default function PaymentPage() {
           adoption_fee,
           organizations (name)
         )
-      `)
-      .eq("id", applicationId)
+      `
+      )
+      .eq('id', applicationId)
       .single()
 
     if (applicationData) {
@@ -99,40 +111,42 @@ export default function PaymentPage() {
       await new Promise((resolve) => setTimeout(resolve, 2000))
 
       // Record payment in database
-      const { error: paymentError } = await supabase.from("payments").insert({
+      const { error: paymentError } = await supabase.from('payments').insert({
         application_id: applicationId,
         adopter_id: currentUser.id,
         adoption_fee: adoptionFee,
         platform_fee: platformFee,
         total_amount: totalAmount,
-        payment_method: "card",
-        payment_status: "completed",
-        transaction_id: `txn_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        payment_method: 'card',
+        payment_status: 'completed',
+        transaction_id: `txn_${Date.now()}_${Math.random()
+          .toString(36)
+          .substr(2, 9)}`,
       })
 
       if (paymentError) throw paymentError
 
       // Update application status to paid
       const { error: updateError } = await supabase
-        .from("adoption_applications")
-        .update({ status: "paid" })
-        .eq("id", applicationId)
+        .from('adoption_applications')
+        .update({ status: 'paid' })
+        .eq('id', applicationId)
 
       if (updateError) throw updateError
 
       // Update dog status to adopted
       const { error: dogError } = await supabase
-        .from("dogs")
-        .update({ status: "adopted" })
-        .eq("id", application.dogs.id)
+        .from('dogs')
+        .update({ status: 'adopted' })
+        .eq('id', application.dogs.id)
 
       if (dogError) throw dogError
 
       // Redirect to success page
       router.push(`/applications/${applicationId}/payment-success`)
     } catch (error) {
-      console.error("Payment processing error:", error)
-      alert("Payment failed. Please try again.")
+      console.error('Payment processing error:', error)
+      alert('Payment failed. Please try again.')
     } finally {
       setIsProcessing(false)
     }
@@ -153,7 +167,9 @@ export default function PaymentPage() {
         <Card className="w-full max-w-md">
           <CardHeader>
             <CardTitle className="text-red-600">Access Denied</CardTitle>
-            <CardDescription>You are not authorized to make this payment.</CardDescription>
+            <CardDescription>
+              You are not authorized to make this payment.
+            </CardDescription>
           </CardHeader>
         </Card>
       </div>
@@ -161,19 +177,22 @@ export default function PaymentPage() {
   }
 
   // Check if application is approved
-  if (application.status !== "approved") {
+  if (application.status !== 'approved') {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <Card className="w-full max-w-md">
           <CardHeader>
             <CardTitle>Payment Not Available</CardTitle>
             <CardDescription>
-              This application must be approved before payment can be processed. Current status:{" "}
+              This application must be approved before payment can be processed.
+              Current status:{' '}
               <Badge className="ml-1">{application.status}</Badge>
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button onClick={() => router.push(`/applications/${applicationId}`)} className="w-full">
+            <Button
+              onClick={() => router.push(`/applications/${applicationId}`)}
+              className="w-full">
               Back to Application
             </Button>
           </CardContent>
@@ -182,8 +201,10 @@ export default function PaymentPage() {
     )
   }
 
-  const photos = application.dogs.photos ? JSON.parse(application.dogs.photos) : []
-  const mainPhoto = photos[0] || "/placeholder.svg"
+  const photos = application.dogs.photos
+    ? JSON.parse(application.dogs.photos)
+    : []
+  const mainPhoto = photos[0] || '/placeholder.svg'
   const adoptionFee = application.dogs.adoption_fee || 0
   const platformFee = Math.round(adoptionFee * 0.1)
   const totalAmount = adoptionFee + platformFee
@@ -197,11 +218,12 @@ export default function PaymentPage() {
               <Button
                 variant="ghost"
                 onClick={() => router.back()}
-                className="mr-4 p-0 h-auto text-blue-600 hover:text-blue-500"
-              >
+                className="mr-4 p-0 h-auto text-blue-600 hover:text-blue-500">
                 ← Back
               </Button>
-              <h1 className="text-xl font-semibold text-gray-900">Complete Adoption Payment</h1>
+              <h1 className="text-xl font-semibold text-gray-900">
+                Complete Adoption Payment
+              </h1>
             </div>
           </div>
         </div>
@@ -214,19 +236,25 @@ export default function PaymentPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Adoption Details</CardTitle>
-                <CardDescription>You're adopting this wonderful companion</CardDescription>
+                <CardDescription>
+                  You&apos;re adopting this wonderful companion
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center gap-4">
                   <img
-                    src={mainPhoto || "/placeholder.svg"}
+                    src={mainPhoto || '/placeholder.svg'}
                     alt={application.dogs.name}
                     className="w-16 h-16 object-cover rounded-lg"
                   />
                   <div>
-                    <h3 className="font-semibold text-lg">{application.dogs.name}</h3>
+                    <h3 className="font-semibold text-lg">
+                      {application.dogs.name}
+                    </h3>
                     <p className="text-gray-600">{application.dogs.breed}</p>
-                    <p className="text-sm text-gray-500">{application.dogs.organizations.name}</p>
+                    <p className="text-sm text-gray-500">
+                      {application.dogs.organizations.name}
+                    </p>
                   </div>
                 </div>
 
@@ -251,7 +279,9 @@ export default function PaymentPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Payment Information</CardTitle>
-                <CardDescription>Enter your payment details to complete the adoption</CardDescription>
+                <CardDescription>
+                  Enter your payment details to complete the adoption
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={processPayment} className="space-y-4">
@@ -260,7 +290,9 @@ export default function PaymentPage() {
                     <Input
                       id="cardholderName"
                       value={paymentData.cardholderName}
-                      onChange={(e) => handleInputChange("cardholderName", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange('cardholderName', e.target.value)
+                      }
                       placeholder="John Doe"
                       required
                     />
@@ -271,7 +303,9 @@ export default function PaymentPage() {
                     <Input
                       id="cardNumber"
                       value={paymentData.cardNumber}
-                      onChange={(e) => handleInputChange("cardNumber", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange('cardNumber', e.target.value)
+                      }
                       placeholder="1234 5678 9012 3456"
                       maxLength={19}
                       required
@@ -284,7 +318,9 @@ export default function PaymentPage() {
                       <Input
                         id="expiryDate"
                         value={paymentData.expiryDate}
-                        onChange={(e) => handleInputChange("expiryDate", e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange('expiryDate', e.target.value)
+                        }
                         placeholder="MM/YY"
                         maxLength={5}
                         required
@@ -295,7 +331,9 @@ export default function PaymentPage() {
                       <Input
                         id="cvv"
                         value={paymentData.cvv}
-                        onChange={(e) => handleInputChange("cvv", e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange('cvv', e.target.value)
+                        }
                         placeholder="123"
                         maxLength={4}
                         required
@@ -304,13 +342,19 @@ export default function PaymentPage() {
                   </div>
 
                   <div className="pt-4">
-                    <Button type="submit" className="w-full bg-green-600 hover:bg-green-700" disabled={isProcessing}>
-                      {isProcessing ? "Processing Payment..." : `Pay $${totalAmount}`}
+                    <Button
+                      type="submit"
+                      className="w-full bg-green-600 hover:bg-green-700"
+                      disabled={isProcessing}>
+                      {isProcessing
+                        ? 'Processing Payment...'
+                        : `Pay $${totalAmount}`}
                     </Button>
                   </div>
 
                   <p className="text-xs text-gray-500 text-center">
-                    Your payment is secure and encrypted. This is a demo payment system.
+                    Your payment is secure and encrypted. This is a demo payment
+                    system.
                   </p>
                 </form>
               </CardContent>

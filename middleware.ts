@@ -1,15 +1,11 @@
-import { updateSession } from "@/lib/supabase/middleware"
- import type { NextRequest } from "next/server"
+import type { NextRequest } from 'next/server'
+import { NextResponse } from 'next/server'
+import { updateSession } from '@/lib/supabase/middleware'
 
- export async function middleware(request: NextRequest) {
-   return await updateSession(request)
- }
+export async function middleware(request: NextRequest) {
+  return await updateSession(request)
+}
 
- export const config = {
-   matcher: [
-     "/((?!page.*.(?:svg|png|jpg|jpeg|gif|webp|tsx)$).*)",
-   ],
- }
-
-// Middleware disabled for demo mode - no authentication required
-// export {}
+export const config = {
+  matcher: ['/((?!_next|api/auth).*)(.+)'],
+}

@@ -1,13 +1,20 @@
-"use client"
+'use client'
 
-import { createClient } from "@/lib/supabase/client"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
-import Link from "next/link"
-import { useParams, useRouter } from "next/navigation"
-import { useState, useEffect } from "react"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import { useEffect, useState } from 'react'
+import { useParams, useRouter } from 'next/navigation'
+
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import Link from 'next/link'
+import { Separator } from '@/components/ui/separator'
+import { createClient } from '@/lib/supabase/client'
 
 interface Dog {
   id: string
@@ -55,12 +62,14 @@ export default function DogDetailPage() {
     setLoading(true)
 
     const { data } = await supabase
-      .from("dogs")
-      .select(`
+      .from('dogs')
+      .select(
+        `
         *,
         organizations (*)
-      `)
-      .eq("id", dogId)
+      `
+      )
+      .eq('id', dogId)
       .single()
 
     if (data) {
@@ -71,21 +80,21 @@ export default function DogDetailPage() {
 
   const formatAge = (years: number, months: number) => {
     const parts = []
-    if (years) parts.push(`${years} year${years > 1 ? "s" : ""}`)
-    if (months) parts.push(`${months} month${months > 1 ? "s" : ""}`)
-    return parts.join(" and ") || "Age unknown"
+    if (years) parts.push(`${years} year${years > 1 ? 's' : ''}`)
+    if (months) parts.push(`${months} month${months > 1 ? 's' : ''}`)
+    return parts.join(' and ') || 'Age unknown'
   }
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "available":
-        return "bg-green-100 text-green-800"
-      case "pending":
-        return "bg-yellow-100 text-yellow-800"
-      case "adopted":
-        return "bg-blue-100 text-blue-800"
+      case 'available':
+        return 'bg-green-100 text-green-800'
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800'
+      case 'adopted':
+        return 'bg-blue-100 text-blue-800'
       default:
-        return "bg-gray-100 text-gray-800"
+        return 'bg-gray-100 text-gray-800'
     }
   }
 
@@ -103,10 +112,15 @@ export default function DogDetailPage() {
         <Card className="max-w-md text-center">
           <CardHeader>
             <CardTitle>Dog Not Found</CardTitle>
-            <CardDescription>The dog you're looking for doesn't exist or has been removed.</CardDescription>
+            <CardDescription>
+              The dog you&apos;re looking for doesn&apos;t exist or has been
+              removed.
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button onClick={() => router.push("/browse")}>Browse Other Dogs</Button>
+            <Button onClick={() => router.push('/browse')}>
+              Browse Other Dogs
+            </Button>
           </CardContent>
         </Card>
       </div>
@@ -122,10 +136,14 @@ export default function DogDetailPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <Link href="/browse" className="text-blue-600 hover:text-blue-500 mr-4">
+              <Link
+                href="/browse"
+                className="text-blue-600 hover:text-blue-500 mr-4">
                 ← Back to Browse
               </Link>
-              <h1 className="text-xl font-semibold text-gray-900">{dog.name}</h1>
+              <h1 className="text-xl font-semibold text-gray-900">
+                {dog.name}
+              </h1>
             </div>
             <Badge className={getStatusColor(dog.status)}>{dog.status}</Badge>
           </div>
@@ -140,7 +158,11 @@ export default function DogDetailPage() {
               <Card className="overflow-hidden">
                 <div className="aspect-video relative">
                   <img
-                    src={hasPhotos ? photos[currentPhotoIndex] : "/placeholder.svg?height=400&width=600&query=cute dog"}
+                    src={
+                      hasPhotos
+                        ? photos[currentPhotoIndex]
+                        : '/placeholder.svg?height=400&width=600&query=cute dog'
+                    }
                     alt={dog.name}
                     className="w-full h-full object-cover"
                   />
@@ -154,11 +176,12 @@ export default function DogDetailPage() {
                       key={index}
                       onClick={() => setCurrentPhotoIndex(index)}
                       className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-colors ${
-                        index === currentPhotoIndex ? "border-blue-500" : "border-gray-200"
-                      }`}
-                    >
+                        index === currentPhotoIndex
+                          ? 'border-blue-500'
+                          : 'border-gray-200'
+                      }`}>
                       <img
-                        src={photo || "/placeholder.svg"}
+                        src={photo || '/placeholder.svg'}
                         alt={`${dog.name} photo ${index + 1}`}
                         className="w-full h-full object-cover"
                       />
@@ -181,8 +204,12 @@ export default function DogDetailPage() {
                     </div>
                     {dog.adoption_fee && (
                       <div className="text-right">
-                        <div className="text-2xl font-bold text-blue-600">${dog.adoption_fee}</div>
-                        <div className="text-sm text-gray-600">Adoption Fee</div>
+                        <div className="text-2xl font-bold text-blue-600">
+                          ${dog.adoption_fee}
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          Adoption Fee
+                        </div>
                       </div>
                     )}
                   </div>
@@ -197,27 +224,41 @@ export default function DogDetailPage() {
                     )}
                     {dog.gender && (
                       <div>
-                        <span className="font-medium text-gray-700">Gender:</span>
+                        <span className="font-medium text-gray-700">
+                          Gender:
+                        </span>
                         <span className="ml-2 capitalize">{dog.gender}</span>
                       </div>
                     )}
                     {(dog.location_city || dog.organizations.city) && (
                       <div className="col-span-2">
-                        <span className="font-medium text-gray-700">Location:</span>
+                        <span className="font-medium text-gray-700">
+                          Location:
+                        </span>
                         <span className="ml-2">
-                          {dog.location_city || dog.organizations.city}, {dog.location_state || dog.organizations.state}
+                          {dog.location_city || dog.organizations.city},{' '}
+                          {dog.location_state || dog.organizations.state}
                         </span>
                       </div>
                     )}
                   </div>
 
-                  {dog.status === "available" && (
+                  {dog.status === 'available' && (
                     <div className="flex gap-3 mt-6">
-                      <Button asChild className="flex-1 bg-blue-600 hover:bg-blue-700">
-                        <Link href={`/dogs/${dog.id}/apply`}>Apply for Adoption</Link>
+                      <Button
+                        asChild
+                        className="flex-1 bg-blue-600 hover:bg-blue-700">
+                        <Link href={`/dogs/${dog.id}/apply`}>
+                          Apply for Adoption
+                        </Link>
                       </Button>
-                      <Button asChild variant="outline" className="flex-1 bg-transparent">
-                        <Link href={`/dogs/${dog.id}/inquire`}>Send Inquiry</Link>
+                      <Button
+                        asChild
+                        variant="outline"
+                        className="flex-1 bg-transparent">
+                        <Link href={`/dogs/${dog.id}/inquire`}>
+                          Send Inquiry
+                        </Link>
                       </Button>
                     </div>
                   )}
@@ -230,7 +271,9 @@ export default function DogDetailPage() {
                     <CardTitle className="text-lg">About {dog.name}</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-gray-700 leading-relaxed">{dog.description}</p>
+                    <p className="text-gray-700 leading-relaxed">
+                      {dog.description}
+                    </p>
                   </CardContent>
                 </Card>
               )}
@@ -238,19 +281,29 @@ export default function DogDetailPage() {
               {(dog.medical_notes || dog.behavioral_notes) && (
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-lg">Additional Information</CardTitle>
+                    <CardTitle className="text-lg">
+                      Additional Information
+                    </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     {dog.medical_notes && (
                       <div>
-                        <h4 className="font-medium text-gray-900 mb-2">Medical Notes</h4>
-                        <p className="text-gray-700 text-sm leading-relaxed">{dog.medical_notes}</p>
+                        <h4 className="font-medium text-gray-900 mb-2">
+                          Medical Notes
+                        </h4>
+                        <p className="text-gray-700 text-sm leading-relaxed">
+                          {dog.medical_notes}
+                        </p>
                       </div>
                     )}
                     {dog.behavioral_notes && (
                       <div>
-                        <h4 className="font-medium text-gray-900 mb-2">Behavioral Notes</h4>
-                        <p className="text-gray-700 text-sm leading-relaxed">{dog.behavioral_notes}</p>
+                        <h4 className="font-medium text-gray-900 mb-2">
+                          Behavioral Notes
+                        </h4>
+                        <p className="text-gray-700 text-sm leading-relaxed">
+                          {dog.behavioral_notes}
+                        </p>
                       </div>
                     )}
                   </CardContent>
@@ -265,9 +318,13 @@ export default function DogDetailPage() {
                 <CardContent>
                   <div className="space-y-3">
                     <div>
-                      <h4 className="font-medium text-gray-900">{dog.organizations.name}</h4>
+                      <h4 className="font-medium text-gray-900">
+                        {dog.organizations.name}
+                      </h4>
                       {dog.organizations.description && (
-                        <p className="text-gray-600 text-sm mt-1">{dog.organizations.description}</p>
+                        <p className="text-gray-600 text-sm mt-1">
+                          {dog.organizations.description}
+                        </p>
                       )}
                     </div>
 
@@ -276,29 +333,38 @@ export default function DogDetailPage() {
                     <div className="space-y-2 text-sm">
                       {dog.organizations.email && (
                         <div className="flex items-center gap-2">
-                          <span className="font-medium text-gray-700">Email:</span>
-                          <a href={`mailto:${dog.organizations.email}`} className="text-blue-600 hover:text-blue-500">
+                          <span className="font-medium text-gray-700">
+                            Email:
+                          </span>
+                          <a
+                            href={`mailto:${dog.organizations.email}`}
+                            className="text-blue-600 hover:text-blue-500">
                             {dog.organizations.email}
                           </a>
                         </div>
                       )}
                       {dog.organizations.phone && (
                         <div className="flex items-center gap-2">
-                          <span className="font-medium text-gray-700">Phone:</span>
-                          <a href={`tel:${dog.organizations.phone}`} className="text-blue-600 hover:text-blue-500">
+                          <span className="font-medium text-gray-700">
+                            Phone:
+                          </span>
+                          <a
+                            href={`tel:${dog.organizations.phone}`}
+                            className="text-blue-600 hover:text-blue-500">
                             {dog.organizations.phone}
                           </a>
                         </div>
                       )}
                       {dog.organizations.website && (
                         <div className="flex items-center gap-2">
-                          <span className="font-medium text-gray-700">Website:</span>
+                          <span className="font-medium text-gray-700">
+                            Website:
+                          </span>
                           <a
                             href={dog.organizations.website}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-blue-600 hover:text-blue-500"
-                          >
+                            className="text-blue-600 hover:text-blue-500">
                             Visit Website
                           </a>
                         </div>
